@@ -1,4 +1,4 @@
-package com.example.concurrency.Atomic;
+package com.example.concurrency.atomic;
 
 import com.example.concurrency.annoations.ThreadSafe;
 import lombok.extern.slf4j.Slf4j;
@@ -7,27 +7,28 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.LongAdder;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @Author: admin
- * @Date: 2019/10/29 17:39
- * @Description: 每次执行的结果可能都不同，这是一个线程不安全的类，使用 @NotThreadSafe 进行标识
+ * @Date: 2019/10/30 13:08
+ * @Description:
  */
 @ThreadSafe
 @Slf4j
-public class AtomicExample3 {
+public class AtomicExample6 {
+
+
+    private static AtomicBoolean isHappended = new AtomicBoolean(false);
+
     //请求总数
     public static int clientTotal = 5000;
 
     //同时并发执行的线程数
     public static int threadTotal = 200;
 
-    //jdk 8添加
-    private static LongAdder count = new LongAdder();
 
-//    public static int count = 0;
+    private static AtomicExample6 atomicExample5 = new AtomicExample6();
 
     public static void main(String[] args) throws Exception {
 
@@ -45,7 +46,7 @@ public class AtomicExample3 {
                 try {
                     //引入信号量，是否可以被执行
                     semaphore.acquire();
-                    add();
+                    test();
                     //释放当前进程
                     semaphore.release();
 
@@ -62,13 +63,14 @@ public class AtomicExample3 {
         //关闭线程池
         executorService.shutdown();
 
-        log.info("count:{}", count);
+        log.info("isHappended:{}", isHappended.get());
     }
 
-    private static void add() {
-//        count++;
-//        count.getAndIncrement();
-        count.increment();
+    private static void test() {
+        //原子性--该段代码只执行一次
+        if (isHappended.compareAndSet(false, true)) {
+            log.info("excute", isHappended.get());
+        }
     }
-
 }
+
